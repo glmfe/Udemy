@@ -1,0 +1,152 @@
+/**
+  ******************************************************************************
+  * @file    main.c
+  * @author  Ac6
+  * @version V1.0
+  * @date    01-December-2013
+  * @brief   Default main function.
+  ******************************************************************************
+*/
+
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "FreeRTOS.h"
+#include "stm32f4xx.h"
+#include "task.h"
+
+#ifdef USE_SEMIHOSTING
+	extern void initialise_monitor_handles();
+#endif
+
+void vTask1_handler(void *params);
+void vTask2_handler(void *params);
+
+static void prvSetupHardware(void);
+static void prvSetupUart(void);
+
+void printMsg(char *msg);
+
+TaskHandle_t xTaskHandle_1 = NULL;
+TaskHandle_t xTaskHandle_2 = NULL;
+
+char usr_msg[250];
+#define TRUE 1;
+#define FALSE 0;
+
+int UART_ACCESS_KEY = TRUE;
+
+//uses for semihosting debug
+
+int main(void)
+{
+
+	#ifdef USE_SEMIHOSTING
+		initialise_monitor_handles();
+		printf("Init SEMIHOSTING\n");
+	#endif
+	//1. Reset Clock to the default state
+	//HSI ON, PLL OFF, HSE OFF, System clock = 16Mhz
+	RCC_DeInit();
+	//Update the SysCoreClock Var
+	SystemCoreClockUpdate();
+	prvSetupHardware();
+	sprintf(usr_msg, "this is hello world application");
+	printMsg(usr_msg);
+	//Create two Tasks
+	xTaskCreate(vTask1_handler,
+			"Task 1",
+			configMINIMAL_STACK_SIZE,
+			NULL,
+			2,
+			&xTaskHandle_1);
+
+	xTaskCreate(vTask2_handler,
+			"Task 2",
+			configMINIMAL_STACK_SIZE,
+			NULL,
+			2,
+			&xTaskHandle_2);
+
+	//Scheduling the tasks
+	vTaskStartScheduler();
+
+	for(;;);
+
+}
+
+
+void vTask1_handler(void *params)
+{
+	while(1){
+		if (UART_ACCESS_KEY){
+			UART_ACCESS_KEY = FALSE;
+			printMsg("Task 1\r\n");
+			UART_ACCESS_KEY = TRUE;
+			taskYIELD();
+		}
+	}
+
+
+}
+
+void vTask2_handler(void *params)
+{
+	while(1){
+		if (UART_ACCESS_KEY){
+			UART_ACCESS_KEY = FALSE;
+			sprintf(usr_msg, "Task 2\r\n");
+			printMsg(usr_msg);
+			UART_ACCESS_KEY = TRUE;
+			taskYIELD();
+		}
+	}
+}
+
+
+static void prvSetupUart(void){
+	GPIO_InitTypeDef gpio_uart_pins;
+	USART_InitTypeDef uart1_init;
+
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+	//PA2 as TX PA3 as RX
+	memset(&gpio_uart_pins,0, sizeof(gpio_uart_pins));
+
+	gpio_uart_pins.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
+	gpio_uart_pins.GPIO_Mode = GPIO_Mode_AF;
+	gpio_uart_pins.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_Init(GPIOB, &gpio_uart_pins);
+
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource6,GPIO_AF_USART1);
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource7,GPIO_AF_USART1);
+
+	memset(&uart1_init,0, sizeof(uart1_init));
+	uart1_init.USART_BaudRate = 115200;
+	uart1_init.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+	uart1_init.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
+	uart1_init.USART_Parity = USART_Parity_No;
+	uart1_init.USART_StopBits = USART_StopBits_1;
+	uart1_init.USART_WordLength = USART_WordLength_8b;
+
+	USART_Init(USART1, &uart1_init);
+
+	//Enable UART 2 per
+	USART_Cmd(USART1, ENABLE);
+}
+
+static void prvSetupHardware(void){
+
+	prvSetupUart();
+
+}
+
+void printMsg(char *msg){
+
+	for(uint32_t i=0; i < strlen(msg); i++){
+		while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) != SET);
+		USART_SendData(USART1, msg[i]);
+
+	}
+}

@@ -1,0 +1,62 @@
+16:49:44 **** Incremental Build of configuration Debug for project STM_HelloWorld ****
+make -j8 all 
+Building file: ../src/main.c
+Invoking: MCU GCC Compiler
+C:\Users\guilherme.ferreira\Documents\Github\Udemy\STM_HelloWorld\Debug
+arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -DSTM32 -DSTM32F4 -DSTM32F411VETx -DSTM32F411E_DISCO -DDEBUG -DSTM32F411xE -DUSE_STDPERIPH_DRIVER -I"C:/Users/guilherme.ferreira/Documents/Github/Udemy/STM_HelloWorld/StdPeriph_Driver/inc" -I"C:/Users/guilherme.ferreira/Documents/Github/Udemy/STM_HelloWorld/Config" -I"C:/Users/guilherme.ferreira/Documents/Github/Udemy/STM_HelloWorld/Third-Party/FreeRTOS/org/Source/portable/GCC/ARM_CM4F" -I"C:/Users/guilherme.ferreira/Documents/Github/Udemy/STM_HelloWorld/Third-Party/FreeRTOS/org/Source/include" -I"C:/Users/guilherme.ferreira/Documents/Github/Udemy/STM_HelloWorld/inc" -I"C:/Users/guilherme.ferreira/Documents/Github/Udemy/STM_HelloWorld/CMSIS/device" -I"C:/Users/guilherme.ferreira/Documents/Github/Udemy/STM_HelloWorld/CMSIS/core" -O0 -g3 -Wall -fmessage-length=0 -ffunction-sections -c -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.c"
+Finished building: ../src/main.c
+ 
+Building target: STM_HelloWorld.elf
+Invoking: MCU GCC Linker
+arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -specs=rdimon.specs -lc -lrdimon -T"C:/Users/guilherme.ferreira/Documents/Github/Udemy/STM_HelloWorld/LinkerScript.ld" -Wl,-Map=output.map -Wl,--gc-sections -o "STM_HelloWorld.elf" @"objects.list"   -lm
+Finished building target: STM_HelloWorld.elf
+ 
+make --no-print-directory post-build
+Generating binary and Printing size information:
+arm-none-eabi-objcopy -O binary "STM_HelloWorld.elf" "STM_HelloWorld.bin"
+arm-none-eabi-size "STM_HelloWorld.elf"
+   text	   data	    bss	    dec	    hex	filename
+  13828	   1128	  78564	  93520	  16d50	STM_HelloWorld.elf
+ 
+16:49:49 **** Programming project STM_HelloWorld on chip ****
+"C:\\Ac6\\SystemWorkbench\\plugins\\fr.ac6.mcu.externaltools.openocd.win32_1.23.0.201904120827\\tools\\openocd\\bin\\openocd.exe" -f stm32.flash.5473076432532947306.cfg -s "C:\\Users\\guilherme.ferreira\\Documents\\Github\\Udemy\\STM_HelloWorld" -s "C:\\Ac6\\SystemWorkbench\\plugins\\fr.ac6.mcu.debug_2.5.0.201904120827\\resources\\openocd\\st_scripts" -c "program Debug/STM_HelloWorld.elf verify reset " -c shutdown 
+Open On-Chip Debugger 0.10.0+dev-00021-g524e8c8 (2019-04-12-08:48)
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+srst_only separate srst_nogate srst_open_drain connect_assert_srst
+Info : The selected transport took over low-level target control. The results might differ compared to plain JTAG/SWD
+adapter speed: 8000 kHz
+adapter_nsrst_delay: 100
+Info : clock speed 8000 kHz
+Info : STLINK v2 JTAG v34 API v2 SWIM v0 VID 0x0483 PID 0x3748
+Info : using stlink api v2
+Info : Target voltage: 2.945781
+Info : Unable to match requested speed 8000 kHz, using 4000 kHz
+Info : Stlink adapter speed set to 4000 kHz
+Info : STM32F411VETx.cpu: hardware has 6 breakpoints, 4 watchpoints
+Info : Listening on port 3333 for gdb connections
+target halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x08003584 msp: 0x20020000
+configuring PLL
+Info : Unable to match requested speed 8000 kHz, using 4000 kHz
+Info : Stlink adapter speed set to 4000 kHz
+Info : Unable to match requested speed 8000 kHz, using 4000 kHz
+adapter speed: 4000 kHz
+** Programming Started **
+auto erase enabled
+Info : device id = 0x10006431
+Info : flash size = 512kbytes
+target halted due to breakpoint, current mode: Thread 
+xPSR: 0x61000000 pc: 0x20000046 msp: 0x20020000
+wrote 16384 bytes from file Debug/STM_HelloWorld.elf in 0.639486s (25.020 KiB/s)
+** Programming Finished **
+** Verify Started **
+target halted due to breakpoint, current mode: Thread 
+xPSR: 0x61000000 pc: 0x2000002e msp: 0x20020000
+target halted due to breakpoint, current mode: Thread 
+xPSR: 0x61000000 pc: 0x2000002e msp: 0x20020000
+verified 14996 bytes in 0.162721s (89.998 KiB/s)
+** Verified OK **
+** Resetting Target **
+shutdown command invoked
