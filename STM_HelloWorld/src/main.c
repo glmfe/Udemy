@@ -24,10 +24,14 @@ void vTask1_handler(void *params);
 void vTask2_handler(void *params);
 
 static void prvSetupHardware(void);
+static void prvSetupUart(void);
+
+void printMsg(char *msg);
 
 TaskHandle_t xTaskHandle_1 = NULL;
 TaskHandle_t xTaskHandle_2 = NULL;
 
+char usr_msg[250];
 
 //uses for semihosting debug
 
@@ -43,7 +47,9 @@ int main(void)
 	RCC_DeInit();
 	//Update the SysCoreClock Var
 	SystemCoreClockUpdate();
-
+	prvSetupHardware();
+	sprintf(usr_msg, "this is hello world application");
+	printMsg(usr_msg);
 	//Create two Tasks
 	xTaskCreate(vTask1_handler,
 			"Task 1",
@@ -70,6 +76,7 @@ int main(void)
 void vTask1_handler(void *params)
 {
 	while(1){
+		printMsg(usr_msg);
 	}
 
 }
@@ -80,33 +87,49 @@ void vTask2_handler(void *params)
 	}
 }
 
-static void prvSetupHardware(void){
 
+static void prvSetupUart(void){
 	GPIO_InitTypeDef gpio_uart_pins;
-	USART_InitTypeDef uart2_init;
+	USART_InitTypeDef uart1_init;
 
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 	//PA2 as TX PA3 as RX
 	memset(&gpio_uart_pins,0, sizeof(gpio_uart_pins));
 
-	gpio_uart_pins.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3;
+	gpio_uart_pins.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10;
 	gpio_uart_pins.GPIO_Mode = GPIO_Mode_AF;
 	gpio_uart_pins.GPIO_PuPd = GPIO_PuPd_UP;
 	GPIO_Init(GPIOA, &gpio_uart_pins);
 
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource2,GPIO_AF_USART2);
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource3,GPIO_AF_USART2);
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource9,GPIO_AF_USART1);
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource10,GPIO_AF_USART1);
 
-	memset(&uart2_init,0, sizeof(uart2_init));
-	uart2_init.USART_BaudRate = 115200;
-	uart2_init.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-	uart2_init.USART_Mode = USART_Mode_Tx | USART_Mode_Tx;
-	uart2_init.USART_Parity = USART_Parity_No;
-	uart2_init.USART_StopBits = USART_StopBits_1;
-	uart2_init.USART_WordLength = USART_WordLength_8b;
+	memset(&uart1_init,0, sizeof(uart1_init));
+	uart1_init.USART_BaudRate = 115200;
+	uart1_init.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+	uart1_init.USART_Mode = USART_Mode_Tx | USART_Mode_Tx;
+	uart1_init.USART_Parity = USART_Parity_No;
+	uart1_init.USART_StopBits = USART_StopBits_1;
+	uart1_init.USART_WordLength = USART_WordLength_8b;
 
-	USART_Init(USART2, &uart2_init);
+	USART_Init(USART1, &uart1_init);
+
+	//Enable UART 2 per
+	USART_Cmd(USART1, ENABLE);
+}
+
+static void prvSetupHardware(void){
+
+	prvSetupUart();
 
 }
 
+void printMsg(char *msg){
+
+	for(uint32_t i=0; i < strlen(msg); i++){
+		while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) != SET);
+			USART_SendData(USART1, msg[i]);
+
+	}
+}
